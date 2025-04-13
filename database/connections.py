@@ -40,13 +40,13 @@ def update_seller_status(username: str, status: str):
     return None
 
 
-def delete_seller_by_index(status: str, username: str):
+def delete_seller_by_index(username: str):
     seller = Sellers.select().where(
-        (Sellers.username == username) & (Sellers.status == status)
+        (Sellers.username == username)
     ).first()
     if seller:
         seller.delete_instance()
-        _reorder_indexes(Sellers, status)
+        _reorder_indexes(Sellers, seller.status)
         return True
     return False
 
@@ -83,13 +83,13 @@ def update_shop_status(username: str, status: str):
     return None
 
 
-def delete_shop_by_index(status: str, username: str):
+def delete_shop_by_index(username: str):
     shop = Shops.select().where(
-        (Shops.status == status) & (Shops.username == username)
+        (Shops.username == username)
     ).first()
     if shop:
         shop.delete_instance()
-        _reorder_indexes(Shops, status)
+        _reorder_indexes(Shops, shop.status)
         return True
     return False
 

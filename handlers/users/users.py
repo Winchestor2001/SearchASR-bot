@@ -37,9 +37,6 @@ async def list_command(message: Message, state: FSMContext):
     trusted_text = "\n".join([f"{shop.index}. {shop.username}" for i, shop in enumerate(trusted_seller)])
 
     response = (
-        "Список СКАМ магазинов:\nНЕЛЬЗЯ ДОВЕРЯТЬ ❌\n\n"
-        f"{scam_text if scam_text else 'Пусто'}\n"
-        "————————————\n\n"
         "МОЖНО ДОВЕРЯТЬ ✅\n\n"
         f"{trusted_text if trusted_text else 'Пусто'}"
     )
@@ -59,7 +56,7 @@ async def search_shop(message: Message, state: FSMContext):
 
     # Search by username or name
     shop = Shops.select().where(
-        (Shops.username == query) | (Shops.name == query)
+        (Shops.username == query) | (Shops.name.contains(query))
     ).first()
 
     if shop:
@@ -73,8 +70,9 @@ async def search_shop(message: Message, state: FSMContext):
             f"Username: {shop.username}\n"
             f"{status_text}"
         )
+        await state.clear()
     else:
         response = "⚠️ Магазин не найден в базе данных."
+        await state.set_state(ShopSearch.name)
 
     await message.answer(response)
-    await state.clear()
