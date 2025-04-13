@@ -71,11 +71,10 @@ async def search_shop(message: Message, state: FSMContext):
             f"Результат поиска:\n\n"
             f"Название: {shop.name}\n"
             f"Username: {shop.username}\n"
-            f"Описание: {shop.description or '—'}\n\n"
             f"{status_text}"
         )
     else:
-        response = "Магазин не найден в базе данных."
+        response = "⚠️ Магазин не найден в базе данных."
 
     await message.answer(response)
     await state.clear()

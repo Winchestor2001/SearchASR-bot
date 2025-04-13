@@ -34,7 +34,6 @@ class Sellers(BaseModel):
 class Shops(BaseModel):
     name = CharField(max_length=255)
     username = CharField(max_length=255, unique=True)
-    description = TextField(null=True)
     status = CharField(choices=[("trusted", "Trusted"), ("scam", "Scam")])
     index = IntegerField()
     date = TimestampField()

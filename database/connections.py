@@ -51,7 +51,7 @@ def delete_seller_by_index(status: str, username: str):
     return False
 
 
-def add_shop(name: str, username: str, status: str = "trusted", description: str = None):
+def add_shop(name: str, username: str, status: str = "trusted"):
     username = username.lower()
     existing = Shops.select().where(Shops.username == username).first()
     if existing:
@@ -62,7 +62,6 @@ def add_shop(name: str, username: str, status: str = "trusted", description: str
         name=name,
         username=username,
         status=status,
-        description=description,
         index=count + 1
     )
     return shop
@@ -84,9 +83,9 @@ def update_shop_status(username: str, status: str):
     return None
 
 
-def delete_shop_by_index(status: str, index: int):
+def delete_shop_by_index(status: str, username: str):
     shop = Shops.select().where(
-        (Shops.status == status) & (Shops.index == index)
+        (Shops.status == status) & (Shops.username == username)
     ).first()
     if shop:
         shop.delete_instance()
