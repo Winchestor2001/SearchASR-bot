@@ -3,6 +3,8 @@ from aiogram.filters import Command
 from aiogram.types import Message
 from aiogram.fsm.context import FSMContext
 from database.connections import *
+from states.user_states import *
+from loader import bot
 
 from filters.is_admin import IsAdmin
 
@@ -25,7 +27,7 @@ async def add_seller_cmd(message: Message):
     status = "trusted"
 
     try:
-        seller = add_seller(username=raw_username, status=status)
+        seller = add_seller(username=raw_username.lower(), status=status)
         await message.answer(f"✅ Продавец {seller.username} добавлен.", disable_web_page_preview=True)
     except Exception as e:
         await message.answer(f"⚠️ Ошибка при добавлении: {e}")
@@ -40,7 +42,7 @@ async def delete_seller_cmd(message: Message):
 
     _, raw_username = parts
 
-    deleted = delete_seller_by_index(raw_username)
+    deleted = delete_seller_by_index(raw_username.lower())
     if deleted:
         await message.answer(f"🗑 Продавец {raw_username} удалён.")
     else:
@@ -68,7 +70,7 @@ async def add_shop_cmd(message: Message):
         return await message.answer("❗️Статус должен быть <code>trusted</code> или <code>scam</code>")
 
     try:
-        shop = add_shop(username=username, name=name, status=status)
+        shop = add_shop(username=username.lower(), name=name, status=status)
         await message.answer(
             f"✅ Магазин <b>{shop.name}</b> ({shop.username}) добавлен как <b>{status.upper()}</b>."
         , disable_web_page_preview=True)
@@ -84,7 +86,7 @@ async def del_shop_cmd(message: Message):
 
     _, username = parts
 
-    success = delete_shop_by_index(username=username)
+    success = delete_shop_by_index(username=username.lower())
     if success:
         await message.answer(f"✅ Магазин {username} удалён из списка")
     else:
@@ -139,3 +141,32 @@ async def all_shops_cmd(message: Message):
         text += "✅ <b>ДОВЕРЕННЫЕ</b>\nНет магазинов\n"
 
     await message.answer(text, disable_web_page_preview=True)
+
+
+@router.message(Command("mailing"), IsAdmin())
+async def start_mailing(message: Message, state: FSMContext):
+    await state.set_state(Mailing.waiting_for_content)
+    await message.answer("📨 Отправьте сообщение (текст, фото, видео, и т.д.), которое хотите разослать всем пользователям.")
+
+
+@router.message(Mailing.waiting_for_content, IsAdmin())
+async def process_mailing(message: Message, state: FSMContext):
+    await state.clear()
+
+    users = Users.select()
+    success, fail = 0, 0
+    btn = message.reply_markup
+
+    for user in users:
+        try:
+            await bot.copy_message(
+                chat_id=user.user_id,
+                from_chat_id=message.chat.id,
+                message_id=message.message_id,
+                reply_markup=btn
+            )
+            success += 1
+        except Exception:
+            fail += 1
+
+    await message.answer(f"📬 Рассылка завершена:\n✅ Успешно: {success}\n❌ Ошибка: {fail}")

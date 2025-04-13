@@ -30,6 +30,7 @@ async def start_command(message: Message, state: FSMContext):
 
 @router.message(Command("list"))
 async def list_command(message: Message, state: FSMContext):
+    await state.clear()
     scam_seller = Sellers.select().where(Sellers.status == "scam").order_by(Sellers.index)
     trusted_seller = Sellers.select().where(Sellers.status == "trusted").order_by(Sellers.index)
 
