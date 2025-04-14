@@ -1,5 +1,10 @@
 from aiogram.fsm.state import State, StatesGroup
 
+
+class AddSeller(StatesGroup):
+    text = State()
+
+
 class ShopSearch(StatesGroup):
     name = State()
 

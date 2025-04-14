@@ -1,4 +1,5 @@
 from .models import Sellers, Shops, Users, db
+from playhouse.shortcuts import model_to_dict
 from peewee import DoesNotExist
 from datetime import datetime
 
@@ -9,35 +10,36 @@ async def add_user(user_id, full_name, username=None):
             Users.create(user_id=user_id, username=username, full_name=full_name)
 
 
-def add_seller(username: str, status: str = "trusted"):
-    username = username.lower()
-    existing = Sellers.select().where(Sellers.username == username).first()
-    if existing:
-        return existing  # already exists
-
-    count = Sellers.select().where(Sellers.status == status).count()
+async def add_seller(text: str):
     seller = Sellers.create(
-        username=username,
-        status=status,
-        index=count + 1,
+        text = text
     )
     return seller
 
 
-def get_seller(username: str):
-    try:
-        return Sellers.get(Sellers.username == username.lower())
-    except DoesNotExist:
-        return None
+async def get_seller():
+    seller = Sellers.select().order_by(Sellers.id.desc()).first()
+    return [model_to_dict(seller)] if seller else []
 
 
-def update_seller_status(username: str, status: str):
-    seller = get_seller(username)
-    if seller:
-        seller.status = status
-        seller.save()
-        return seller
-    return None
+async def delete_all_seller():
+    seller = Sellers.delete().execute()
+    return seller
+
+
+# def add_seller(username: str, status: str = "trusted"):
+#     username = username.lower()
+#     existing = Sellers.select().where(Sellers.username == username).first()
+#     if existing:
+#         return existing  # already exists
+
+#     count = Sellers.select().where(Sellers.status == status).count()
+#     seller = Sellers.create(
+#         username=username,
+#         status=status,
+#         index=count + 1,
+#     )
+#     return seller
 
 
 def delete_seller_by_index(username: str):

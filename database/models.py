@@ -22,9 +22,7 @@ class Users(BaseModel):
 
 
 class Sellers(BaseModel):
-    username = CharField(max_length=255, unique=True)
-    status = CharField(choices=[("trusted", "Trusted"), ("scam", "Scam")])
-    index = IntegerField()
+    text = TextField()
     date = TimestampField()
 
     class Meta:

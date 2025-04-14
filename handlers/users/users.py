@@ -23,19 +23,16 @@ async def start_command(message: Message, state: FSMContext):
     await add_user(user_id=user_id, full_name=full_name, username=username)
     text = (
         "Привет! Ты подписан на нашу группу? Там публикуются посты о продавцах на постоянной основе — @remove_scamming\n\n"
-        "Если да — жми /list"
+        "Если да — жми /whitelist"
     )
     await message.answer(text, reply_markup=main_menu_kb)
 
 
-@router.message(Command("list"))
+@router.message(Command("whitelist"))
 async def list_command(message: Message, state: FSMContext):
     await state.clear()
-    scam_seller = Sellers.select().where(Sellers.status == "scam").order_by(Sellers.index)
-    trusted_seller = Sellers.select().where(Sellers.status == "trusted").order_by(Sellers.index)
-
-    scam_text = "\n".join([f"{shop.index}. {shop.username}" for i, shop in enumerate(scam_seller)])
-    trusted_text = "\n".join([f"{shop.index}. {shop.username}" for i, shop in enumerate(trusted_seller)])
+    trusted_seller = Sellers.select().order_by(Sellers.id.desc()).first()
+    trusted_text = trusted_seller.text
 
     response = (
         "МОЖНО ДОВЕРЯТЬ ✅\n\n"

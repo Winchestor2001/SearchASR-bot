@@ -17,36 +17,63 @@ async def intro_admin(message: Message, state: FSMContext):
 
 
 @router.message(Command("addseller"), IsAdmin())
-async def add_seller_cmd(message: Message):
-
-    parts = message.text.split()
-    if len(parts) != 2:
-        return await message.answer("❗️Неверный формат. Пример:\n<code>/addseller @username</code>")
-
-    _, raw_username = parts
-    status = "trusted"
-
-    try:
-        seller = add_seller(username=raw_username.lower(), status=status)
-        await message.answer(f"✅ Продавец {seller.username} добавлен.", disable_web_page_preview=True)
-    except Exception as e:
-        await message.answer(f"⚠️ Ошибка при добавлении: {e}")
+async def add_seller_cmd(message: Message, state: FSMContext):
+    text = "Отправить полный список поставщиков"
+    await message.answer(text)
+    await state.set_state(AddSeller.text)
 
 
-@router.message(Command("delseller"), IsAdmin())
-async def delete_seller_cmd(message: Message):
+@router.message(AddSeller.text, IsAdmin())
+async def save_db(message: Message, state: FSMContext):
+    text = message.text
+    await delete_all_seller()
+    await add_seller(text=text)
+    await message.answer("Успешно добавлен ✅")
+    await state.clear()
 
-    parts = message.text.split()
-    if len(parts) != 2:
-        return await message.answer("❗️Неверный формат. Пример:\n<code>/delseller @username</code>")
 
-    _, raw_username = parts
+@router.message(Command("update_seller"))
+async def update_seller(message: Message, state: FSMContext):
+    sellers = await get_seller()
+    text = f"Это ваш последний список продавцов:\n\n<code>{sellers[0]['text']}</code>\n\n Пришлите мне новый список продавцов"
+    await message.answer(text)
+    await state.set_state(AddSeller.text)
 
-    deleted = delete_seller_by_index(raw_username.lower())
-    if deleted:
-        await message.answer(f"🗑 Продавец {raw_username} удалён.")
-    else:
-        await message.answer(f"⚠️ Продавец {raw_username} не найден.")
+
+
+#     parts = message.text.strip().split()
+
+#     if len(parts) < 2:
+#         return await message.answer("❗️Неверный формат. Пример:\n<code>/addseller @username</code>")
+
+#     raw_username = parts[1].lower()
+#     icon = parts[2] if len(parts) >= 3 else ""
+#     status = "trusted"
+
+
+#     username = raw_username + icon
+
+#     try:
+#         seller = add_seller(username=username, status=status)
+#         await message.answer(f"✅ Продавец {seller.username} добавлен.", disable_web_page_preview=True)
+#     except Exception as e:
+#         await message.answer(f"⚠️ Ошибка при добавлении: {e}")
+
+
+# @router.message(Command("delseller"), IsAdmin())
+# async def delete_seller_cmd(message: Message):
+
+#     parts = message.text.strip().split()
+#     if len(parts) < 2:
+#         return await message.answer("❗️Неверный формат. Пример:\n<code>/delseller @username</code>")
+
+#     raw_username = " ".join(parts[1:]).lower()
+
+#     deleted = delete_seller_by_index(raw_username)
+#     if deleted:
+#         await message.answer(f"🗑 Продавец {raw_username} удалён.")
+#     else:
+#         await message.answer(f"⚠️ Продавец {raw_username} не найден.")
 
 
 @router.message(Command("addshop"), IsAdmin())
@@ -103,7 +130,7 @@ async def stats_handler(message: Message):
     trusted_shops = Shops.select().where(Shops.status == "trusted").count()
     scam_shops = Shops.select().where(Shops.status == "scam").count()
 
-    trusted_sellers = Sellers.select().where(Sellers.status == "trusted").count()
+    trusted_sellers = Sellers.select().count()
 
     stats_text = (
         f"<b>📊 Статистика бота:</b>\n"
