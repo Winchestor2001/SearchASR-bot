@@ -32,11 +32,10 @@ async def start_command(message: Message, state: FSMContext):
 async def list_command(message: Message, state: FSMContext):
     await state.clear()
     trusted_seller = Sellers.select().order_by(Sellers.id.desc()).first()
-    trusted_text = trusted_seller.text
 
     response = (
         "МОЖНО ДОВЕРЯТЬ ✅\n\n"
-        f"{trusted_text if trusted_text else 'Пусто'}"
+        f"{trusted_seller.text if trusted_seller else 'Пусто'}"
     )
 
     await message.answer(response)
