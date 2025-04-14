@@ -34,7 +34,7 @@ async def list_command(message: Message, state: FSMContext):
     trusted_seller = Sellers.select().order_by(Sellers.id.desc()).first()
 
     response = (
-        "МОЖНО ДОВЕРЯТЬ ✅\n\n"
+        "<b>МОЖНО ДОВЕРЯТЬ</b> ✅\n\n"
         f"{trusted_seller.text if trusted_seller else 'Пусто'}"
     )
 
@@ -58,8 +58,8 @@ async def search_shop(message: Message, state: FSMContext):
 
     if shop:
         status_text = {
-            "trusted": "✅ Магазину МОЖНО доверять!",
-            "scam": "❌ ЭТО СКАМ! НЕЛЬЗЯ доверять!"
+            "trusted": "✅ <b>Магазину МОЖНО доверять!</b>",
+            "scam": "❌ <b>ЭТО СКАМ! НЕЛЬЗЯ доверять!</b>"
         }.get(shop.status, "Статус не определён.")
         response = (
             f"Результат поиска:\n\n"
