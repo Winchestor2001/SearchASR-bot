@@ -21,15 +21,32 @@ async def intro_admin(message: Message, state: FSMContext):
 #     text = "Отправить полный список поставщиков"
 #     await message.answer(text)
 #     await state.set_state(AddSeller.text)
-
-
-@router.message(AddSeller.text, IsAdmin())
-async def save_db(message: Message, state: FSMContext):
-    text = message.text
-    await delete_all_seller()
-    await add_seller(text=text)
-    await message.answer("Успешно добавлен ✅")
+    
+    
+@router.message(Command("allshops"), IsAdmin())
+async def all_shops_cmd(message: Message, state: FSMContext):
     await state.clear()
+    scam_shops = Shops.select().where(Shops.status == "scam").order_by(Shops.id)
+    trusted_shops = Shops.select().where(Shops.status == "trusted").order_by(Shops.id)
+
+    text = "<b>📦 Список всех магазинов</b>\n\n"
+
+    if scam_shops:
+        text += "❌ <b>СКАМ</b>\n"
+        for shop in scam_shops:
+            text += f"{shop.username} - {shop.name}\n"
+        text += "\n"
+    else:
+        text += "❌ <b>СКАМ</b>\nНет магазинов\n\n"
+
+    if trusted_shops:
+        text += "✅ <b>ДОВЕРЕННЫЕ</b>\n"
+        for shop in trusted_shops:
+            text += f"{shop.username} - {shop.name}\n"
+    else:
+        text += "✅ <b>ДОВЕРЕННЫЕ</b>\nНет магазинов\n"
+
+    await message.answer(text, disable_web_page_preview=True)
 
 
 @router.message(Command("update_seller"))
@@ -48,6 +65,15 @@ async def update_seller(message: Message, state: FSMContext):
         await message.answer(text)
 
     await state.set_state(AddSeller.text)
+
+
+@router.message(AddSeller.text, IsAdmin())
+async def save_db(message: Message, state: FSMContext):
+    text = message.text
+    await delete_all_seller()
+    await add_seller(text=text)
+    await message.answer("Успешно добавлен ✅")
+    await state.clear()
 
 
 @router.message(Command("update_shop_trusted"), IsAdmin())
@@ -201,31 +227,6 @@ async def stats_handler(message: Message):
     )
 
     await message.answer(stats_text, disable_web_page_preview=True)
-
-
-@router.message(Command("allshops"), IsAdmin())
-async def all_shops_cmd(message: Message):
-    scam_shops = Shops.select().where(Shops.status == "scam").order_by(Shops.index)
-    trusted_shops = Shops.select().where(Shops.status == "trusted").order_by(Shops.index)
-
-    text = "<b>📦 Список всех магазинов</b>\n\n"
-
-    if scam_shops:
-        text += "❌ <b>СКАМ</b>\n"
-        for shop in scam_shops:
-            text += f"{shop.index}. {shop.username} - {shop.name}\n"
-        text += "\n"
-    else:
-        text += "❌ <b>СКАМ</b>\nНет магазинов\n\n"
-
-    if trusted_shops:
-        text += "✅ <b>ДОВЕРЕННЫЕ</b>\n"
-        for shop in trusted_shops:
-            text += f"{shop.index}. {shop.username} - {shop.name}\n"
-    else:
-        text += "✅ <b>ДОВЕРЕННЫЕ</b>\nНет магазинов\n"
-
-    await message.answer(text, disable_web_page_preview=True)
 
 
 @router.message(Command("mailing"), IsAdmin())
