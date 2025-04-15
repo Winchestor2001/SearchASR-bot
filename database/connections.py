@@ -1,7 +1,6 @@
 from .models import Sellers, Shops, Users, db
-from playhouse.shortcuts import model_to_dict
+from playhouse.shortcuts import model_to_dict  # noqa
 from peewee import DoesNotExist
-from datetime import datetime
 
 
 async def add_user(user_id, full_name, username=None):
@@ -12,7 +11,7 @@ async def add_user(user_id, full_name, username=None):
 
 async def add_seller(text: str):
     seller = Sellers.create(
-        text = text
+        text=text
     )
     return seller
 
