@@ -34,6 +34,7 @@ async def save_db(message: Message, state: FSMContext):
 
 @router.message(Command("update_seller"))
 async def update_seller(message: Message, state: FSMContext):
+    await state.clear()
     sellers = await get_seller()
 
     if not sellers:
@@ -51,6 +52,7 @@ async def update_seller(message: Message, state: FSMContext):
 
 @router.message(Command("update_shop_trusted"), IsAdmin())
 async def add_shop_cmd(message: Message, state: FSMContext):
+    await state.clear()
     trusted_shops = Shops.select().where(Shops.status == "trusted").order_by(Shops.id)
 
     if trusted_shops.exists():
@@ -114,6 +116,7 @@ async def get_shop_context(message: Message, state: FSMContext):
 
 @router.message(Command("update_shop_scam"), IsAdmin())
 async def add_shop_cmd(message: Message, state: FSMContext):
+    await state.clear()
     scam_shops = Shops.select().where(Shops.status == "scam").order_by(Shops.id)
 
     if scam_shops.exists():
