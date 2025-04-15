@@ -58,12 +58,10 @@ def add_shop(name: str, username: str, status: str = "trusted"):
     if existing:
         return existing
 
-    count = Shops.select().where(Shops.status == status).count()
     shop = Shops.create(
         name=name,
         username=username,
-        status=status,
-        index=count + 1
+        status=status
     )
     return shop
 
@@ -75,13 +73,9 @@ def get_shop_by_username(username: str):
         return None
 
 
-def update_shop_status(username: str, status: str):
-    shop = get_shop_by_username(username)
-    if shop:
-        shop.status = status
-        shop.save()
-        return shop
-    return None
+def delete_shop_by_status(status: str):
+    deleted_count = Shops.delete().where(Shops.status == status).execute()
+    return deleted_count
 
 
 def delete_shop_by_index(username: str):

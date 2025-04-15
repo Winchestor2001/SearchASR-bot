@@ -33,7 +33,6 @@ class Shops(BaseModel):
     name = CharField(max_length=255)
     username = CharField(max_length=255, unique=True)
     status = CharField(choices=[("trusted", "Trusted"), ("scam", "Scam")])
-    index = IntegerField()
     date = TimestampField()
 
     class Meta:

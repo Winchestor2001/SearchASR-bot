@@ -5,6 +5,11 @@ class AddSeller(StatesGroup):
     text = State()
 
 
+class AddShop(StatesGroup):
+    text = State()
+    scam_text = State()
+
+
 class ShopSearch(StatesGroup):
     name = State()
 

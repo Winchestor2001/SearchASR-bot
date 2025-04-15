@@ -16,11 +16,11 @@ async def intro_admin(message: Message, state: FSMContext):
     await message.answer("Hello")
 
 
-@router.message(Command("addseller"), IsAdmin())
-async def add_seller_cmd(message: Message, state: FSMContext):
-    text = "Отправить полный список поставщиков"
-    await message.answer(text)
-    await state.set_state(AddSeller.text)
+# @router.message(Command("addseller"), IsAdmin())
+# async def add_seller_cmd(message: Message, state: FSMContext):
+#     text = "Отправить полный список поставщиков"
+#     await message.answer(text)
+#     await state.set_state(AddSeller.text)
 
 
 @router.message(AddSeller.text, IsAdmin())
@@ -35,89 +35,144 @@ async def save_db(message: Message, state: FSMContext):
 @router.message(Command("update_seller"))
 async def update_seller(message: Message, state: FSMContext):
     sellers = await get_seller()
-    text = f"Это ваш последний список продавцов:\n\n<code>{sellers[0]['text']}</code>\n\n Пришлите мне новый список продавцов"
-    await message.answer(text)
+
+    if not sellers:
+        await message.answer("<b>❗️Список продавцов пуст. Пришлите мне новый список продавцов.</b>")
+    else:
+        text = (
+            f"Это ваш последний список продавцов:\n\n"
+            f"<code>{sellers[0]['text']}</code>\n\n"
+            f"Пришлите мне новый список продавцов"
+        )
+        await message.answer(text)
+
     await state.set_state(AddSeller.text)
 
 
+@router.message(Command("update_shop_trusted"), IsAdmin())
+async def add_shop_cmd(message: Message, state: FSMContext):
+    trusted_shops = Shops.select().where(Shops.status == "trusted").order_by(Shops.id)
 
-#     parts = message.text.strip().split()
-
-#     if len(parts) < 2:
-#         return await message.answer("❗️Неверный формат. Пример:\n<code>/addseller @username</code>")
-
-#     raw_username = parts[1].lower()
-#     icon = parts[2] if len(parts) >= 3 else ""
-#     status = "trusted"
-
-
-#     username = raw_username + icon
-
-#     try:
-#         seller = add_seller(username=username, status=status)
-#         await message.answer(f"✅ Продавец {seller.username} добавлен.", disable_web_page_preview=True)
-#     except Exception as e:
-#         await message.answer(f"⚠️ Ошибка при добавлении: {e}")
-
-
-# @router.message(Command("delseller"), IsAdmin())
-# async def delete_seller_cmd(message: Message):
-
-#     parts = message.text.strip().split()
-#     if len(parts) < 2:
-#         return await message.answer("❗️Неверный формат. Пример:\n<code>/delseller @username</code>")
-
-#     raw_username = " ".join(parts[1:]).lower()
-
-#     deleted = delete_seller_by_index(raw_username)
-#     if deleted:
-#         await message.answer(f"🗑 Продавец {raw_username} удалён.")
-#     else:
-#         await message.answer(f"⚠️ Продавец {raw_username} не найден.")
-
-
-@router.message(Command("addshop"), IsAdmin())
-async def add_shop_cmd(message: Message):
-    parts = message.text.strip().split()
-    
-    if len(parts) < 4:
-        return await message.answer(
-            "❗️Неверный формат. Пример:\n<code>/addshop @shopusername status(trusted/scam) Shop Name</code>"
+    if trusted_shops.exists():
+        current_list = "\n".join(
+            [f"{shop.username} - {shop.name}" for shop in trusted_shops]
         )
-
-    _, raw_username, status, *name_parts = parts
-    username = raw_username.strip()
-    status = status.lower()
-    name = " ".join(name_parts).strip()
-
-    if not name:
-        return await message.answer("❗️Название магазина обязательно.")
-
-    if status not in ["trusted", "scam"]:
-        return await message.answer("❗️Статус должен быть <code>trusted</code> или <code>scam</code>")
-
-    try:
-        shop = add_shop(username=username.lower(), name=name, status=status)
-        await message.answer(
-            f"✅ Магазин <b>{shop.name}</b> ({shop.username}) добавлен как <b>{status.upper()}</b>."
-        , disable_web_page_preview=True)
-    except Exception as e:
-        await message.answer(f"⚠️ Ошибка при добавлении магазина: {e}")
-
-
-@router.message(Command("delshop"), IsAdmin())
-async def del_shop_cmd(message: Message):
-    parts = message.text.strip().split()
-    if len(parts) != 2:
-        return await message.answer("❗️Неверный формат. Пример:\n<code>/delshop @username</code>")
-
-    _, username = parts
-
-    success = delete_shop_by_index(username=username.lower())
-    if success:
-        await message.answer(f"✅ Магазин {username} удалён из списка")
     else:
-        await message.answer(f"❌ Магазин {username} со username {username} не найден.")
+        current_list = "Нет магазинов в списке."
+
+    text = (
+        "<b>Пришлите мне полный список магазинов как:</b>\n\n"
+        "<code>@username - name</code>\n\n"
+        "<b>Текущий список магазинов:</b>\n\n"
+        f"<code>{current_list}</code>"
+    )
+
+    await message.answer(text, disable_web_page_preview=True)
+    await state.set_state(AddShop.text)
+
+
+@router.message(AddShop.text, IsAdmin())
+async def get_shop_context(message: Message, state: FSMContext):
+    lines = message.text.strip().splitlines()
+    added, skipped = [], []
+    delete_shop_by_status("trusted") #for delete all shop by status
+
+    for line in lines:
+        if "-" not in line:
+            skipped.append((line, "Нет символа '-'"))
+            continue
+
+        try:
+            raw_username, raw_name = line.split("-", maxsplit=1)
+            username = raw_username.strip().lower()
+            name = raw_name.strip()
+            status = "trusted"
+
+            if not username.startswith("@") or not name:
+                skipped.append((line, "Неверный формат строки"))
+                continue
+
+            shop = add_shop(username=username, name=name, status=status)
+            added.append(shop)
+        except Exception as e:
+            skipped.append((line, str(e)))
+
+    await state.clear()
+
+    response = ""
+    if added:
+        response += "✅<b> Добавлены магазины:</b>\n"
+        for shop in added:
+            response += f"• <b>{shop.name}</b> ({shop.username})\n"
+    if skipped:
+        response += "\n⚠️ <b>Пропущены строки</b>:\n"
+        for line, reason in skipped:
+            response += f"• <code>{line}</code> — {reason}\n"
+
+    await message.answer(response.strip(), disable_web_page_preview=True)
+
+
+@router.message(Command("update_shop_scam"), IsAdmin())
+async def add_shop_cmd(message: Message, state: FSMContext):
+    scam_shops = Shops.select().where(Shops.status == "scam").order_by(Shops.id)
+
+    if scam_shops.exists():
+        current_list = "\n".join(
+            [f"{shop.username} - {shop.name}" for shop in scam_shops]
+        )
+    else:
+        current_list = "Нет магазинов в списке."
+
+    text = (
+        "<b>Пришлите мне полный список магазинов как:</b>\n\n"
+        "<code>@username - name</code>\n\n"
+        "<b>Текущий список магазинов:</b>\n\n"
+        f"<code>{current_list}</code>"
+    )
+
+    await message.answer(text, disable_web_page_preview=True)
+    await state.set_state(AddShop.scam_text)
+
+
+@router.message(AddShop.scam_text, IsAdmin())
+async def get_shop_context(message: Message, state: FSMContext):
+    lines = message.text.strip().splitlines()
+    added, skipped = [], []
+    delete_shop_by_status("scam") #for delete all shop by status
+
+    for line in lines:
+        if "-" not in line:
+            skipped.append((line, "Нет символа '-'"))
+            continue
+
+        try:
+            raw_username, raw_name = line.split("-", maxsplit=1)
+            username = raw_username.strip().lower()
+            name = raw_name.strip()
+            status = "scam"
+
+            if not username.startswith("@") or not name:
+                skipped.append((line, "Неверный формат строки"))
+                continue
+
+            shop = add_shop(username=username, name=name, status=status)
+            added.append(shop)
+        except Exception as e:
+            skipped.append((line, str(e)))
+
+    await state.clear()
+
+    response = ""
+    if added:
+        response += "✅<b> Добавлены магазины:</b>\n"
+        for shop in added:
+            response += f"• <b>{shop.name}</b> ({shop.username})\n"
+    if skipped:
+        response += "\n⚠️ <b>Пропущены строки</b>:\n"
+        for line, reason in skipped:
+            response += f"• <code>{line}</code> — {reason}\n"
+
+    await message.answer(response.strip(), disable_web_page_preview=True)
 
 
 # stats
