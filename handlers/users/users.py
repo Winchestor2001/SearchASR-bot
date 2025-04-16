@@ -22,8 +22,9 @@ async def start_command(message: Message, state: FSMContext):
     )
     await add_user(user_id=user_id, full_name=full_name, username=username)
     text = (
-        "Привет! Ты подписан на нашу группу? Там публикуются посты о продавцах на постоянной основе — @remove_scamming\n\n"
-        "Если да — жми /whitelist"
+        "Привет! 👋\n"
+        "Ты подписан на нашу группу? Там публикуются посты о продавцах на постоянной основе — @remove_scamming\n\n"
+        "/whitelist - проверить белый список Жми «🔍 Найти магазин» и отправляй боту <b>название</b> магазина либо ссылку в формате @username, который хочешь проверить на наличие в нашей базе"
     )
     await message.answer(text, reply_markup=main_menu_kb)
 
@@ -43,7 +44,7 @@ async def list_command(message: Message, state: FSMContext):
 
 @router.message(F.text == "🔍 Найти магазин")
 async def ask_shop_name(message: Message, state: FSMContext):
-    await message.answer("Введите имя магазина или его @username:")
+    await message.answer("<b>Введите название</b> магазина или его @username:")
     await state.set_state(ShopSearch.name)
 
 
