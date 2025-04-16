@@ -3,8 +3,8 @@ from . import admins
 
 
 routers_list = [
-    users.users.router,
     admins.start.router,
+    users.users.router,
 ]
 
 __all__ = [

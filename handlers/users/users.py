@@ -9,7 +9,7 @@ from states.user_states import ShopSearch
 from database.connections import *
 
 from loader import bot
-
+from utils.validators import shop_username_validate
 
 router = Router()
 
@@ -52,7 +52,7 @@ async def ask_shop_name(message: Message, state: FSMContext):
 
 @router.message(ShopSearch.name)
 async def search_shop(message: Message, state: FSMContext):
-    query = message.text.strip().lower()
+    query = await shop_username_validate(message.text.strip().lower())
 
     # Search by username or name
     shop = next(
@@ -70,7 +70,6 @@ async def search_shop(message: Message, state: FSMContext):
             f"Username: {shop.username}\n"
             f"{status_text}"
         )
-        await state.clear()
     else:
         response = "⚠️ Магазин не найден в базе данных."
         await state.set_state(ShopSearch.name)
