@@ -46,7 +46,7 @@ async def list_command(message: Message, state: FSMContext):
 
 @router.message(F.text == "🔍 Найти магазин")
 async def ask_shop_name(message: Message, state: FSMContext):
-    await message.answer("<b>Введите название</b> магазина или его @username:")
+    await message.answer("Введите <b>название</b> магазина или его @username:")
     await state.set_state(ShopSearch.name)
 
 
