@@ -2,6 +2,8 @@ from aiogram import F, Router
 from aiogram.fsm.context import FSMContext
 from aiogram.filters import Command, CommandStart
 from aiogram.types import Message, CallbackQuery
+from peewee import fn
+
 from keyboards.default.start import main_menu_kb
 from states.user_states import ShopSearch
 from database.connections import *
@@ -53,10 +55,10 @@ async def search_shop(message: Message, state: FSMContext):
     query = message.text.strip().lower()
 
     # Search by username or name
-    shop = Shops.select().where(
-        (Shops.username == query) | (Shops.name.contains(query))
-    ).first()
-
+    shop = next(
+        (s for s in Shops.select() if query in s.name.lower() or s.username == query),
+        None
+    )
     if shop:
         status_text = {
             "trusted": "✅ <b>Магазину МОЖНО доверять!</b>",
