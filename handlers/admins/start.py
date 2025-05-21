@@ -7,6 +7,7 @@ from states.user_states import *
 from loader import bot
 
 from filters.is_admin import IsAdmin
+from utils.validators import send_long_text
 
 router = Router()
 
@@ -46,7 +47,7 @@ async def all_shops_cmd(message: Message, state: FSMContext):
     else:
         text += "✅ <b>ДОВЕРЕННЫЕ</b>\nНет магазинов\n"
 
-    await message.answer(text, disable_web_page_preview=True)
+    await send_long_text(message, text)
 
 
 @router.message(Command("update_seller"))
@@ -59,10 +60,10 @@ async def update_seller(message: Message, state: FSMContext):
     else:
         text = (
             f"Это ваш последний список продавцов:\n\n"
-            f"<code>{sellers[0]['text']}</code>\n\n"
+            f"{sellers[0]['text']}\n\n"
             f"Пришлите мне новый список продавцов"
         )
-        await message.answer(text)
+        await send_long_text(message, text)
 
     await state.set_state(AddSeller.text)
 
@@ -92,10 +93,10 @@ async def add_shop_cmd(message: Message, state: FSMContext):
         "<b>Пришлите мне полный список магазинов как:</b>\n\n"
         "<code>@username - name</code>\n\n"
         "<b>Текущий список магазинов:</b>\n\n"
-        f"<code>{current_list}</code>"
+        f"{current_list}"
     )
 
-    await message.answer(text, disable_web_page_preview=True)
+    await send_long_text(message, text)
     await state.set_state(AddShop.text)
 
 
@@ -137,7 +138,7 @@ async def get_shop_context(message: Message, state: FSMContext):
         for line, reason in skipped:
             response += f"• <code>{line}</code> — {reason}\n"
 
-    await message.answer(response.strip(), disable_web_page_preview=True)
+    await send_long_text(message, response.strip())
 
 
 @router.message(Command("update_shop_scam"), IsAdmin())
@@ -156,10 +157,10 @@ async def add_shop_cmd(message: Message, state: FSMContext):
         "<b>Пришлите мне полный список магазинов как:</b>\n\n"
         "<code>@username - name</code>\n\n"
         "<b>Текущий список магазинов:</b>\n\n"
-        f"<code>{current_list}</code>"
+        f"{current_list}"
     )
 
-    await message.answer(text, disable_web_page_preview=True)
+    await send_long_text(message, text)
     await state.set_state(AddShop.scam_text)
 
 
@@ -201,7 +202,7 @@ async def get_shop_context(message: Message, state: FSMContext):
         for line, reason in skipped:
             response += f"• <code>{line}</code> — {reason}\n"
 
-    await message.answer(response.strip(), disable_web_page_preview=True)
+    await send_long_text(message, response.strip())
 
 
 # stats

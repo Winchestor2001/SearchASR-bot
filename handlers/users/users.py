@@ -9,7 +9,7 @@ from states.user_states import ShopSearch
 from database.connections import *
 
 from loader import bot
-from utils.validators import shop_username_validate
+from utils.validators import shop_username_validate, send_long_text
 
 router = Router()
 
@@ -41,7 +41,7 @@ async def list_command(message: Message, state: FSMContext):
         f"{trusted_seller.text if trusted_seller else 'Пусто'}"
     )
 
-    await message.answer(response)
+    await send_long_text(message, response)
 
 
 @router.message(F.text == "🔍 Найти магазин")
