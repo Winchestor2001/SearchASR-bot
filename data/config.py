@@ -6,6 +6,7 @@ env.read_env()
 
 BOT_TOKEN = env.str("BOT_TOKEN")
 ADMINS = list(map(int, env.list("ADMINS")))
+PROXY_URL = env.str("PROXY_URL", default=None)
 
 # DB_NAME = env.str("DB_NAME")
 # DB_USER = env.str("DB_USER")
