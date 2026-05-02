@@ -243,21 +243,21 @@ async def get_shop_context(message: Message, state: FSMContext):
 async def stats_handler(message: Message):
     total_users = Users.select().count()
     total_shops = Shops.select().count()
-    total_sellers = Sellers.select().count()
+    # total_sellers = Sellers.select().count()
 
     trusted_shops = Shops.select().where(Shops.status == "trusted").count()
     scam_shops = Shops.select().where(Shops.status == "scam").count()
 
-    trusted_sellers = Sellers.select().count()
+    # trusted_sellers = Sellers.select().count()
 
     stats_text = (
         f"<b>📊 Статистика бота:</b>\n"
         f"👤 Пользователи: <b>{total_users}</b>\n\n"
         f"🏪 Магазины: <b>{total_shops}</b>\n"
         f"✅ Доверенные: <b>{trusted_shops}</b>\n"
-        f"❌ Скам: <b>{scam_shops}</b>\n\n"
-        f"📦 Продавцы: <b>{total_sellers}</b>\n"
-        f"✅ Доверенные: <b>{trusted_sellers}</b>\n"
+        f"❌ Скам: <b>{scam_shops}</b>"
+        # f"📦 Продавцы: <b>{total_sellers}</b>\n"
+        # f"✅ Доверенные: <b>{trusted_sellers}</b>\n"
     )
 
     await message.answer(stats_text, disable_web_page_preview=True)
