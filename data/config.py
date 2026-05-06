@@ -7,6 +7,8 @@ env.read_env()
 BOT_TOKEN = env.str("BOT_TOKEN")
 ADMINS = list(map(int, env.list("ADMINS")))
 PROXY_URL = env.str("PROXY_URL", default=None)
+CHANNEL_ID = env.int("CHANNEL_ID")
+CHANNEL_URL = env.str("CHANNEL_URL")
 
 # DB_NAME = env.str("DB_NAME")
 # DB_USER = env.str("DB_USER")

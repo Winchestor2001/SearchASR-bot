@@ -5,10 +5,11 @@ from aiogram.types import Message, CallbackQuery
 from peewee import fn
 
 from keyboards.default.start import main_menu_kb
+from keyboards.inline.subscription import sub_keyboard
 from states.user_states import ShopSearch
 from database.connections import *
 
-from loader import bot
+from loader import bot, config
 from utils.validators import shop_username_validate, send_long_text, send_long_text_2
 
 router = Router()
@@ -22,6 +23,25 @@ async def start_command(message: Message, state: FSMContext):
         message.from_user.first_name,
         message.from_user.username,
     )
+
+    try:
+        chat_member = await bot.get_chat_member(chat_id=config.CHANNEL_ID, user_id=user_id)
+        if chat_member.status in ["left", "kicked", "banned"]:
+            is_subscribed = False
+        else:
+            is_subscribed = True
+    except Exception as e:
+        print(f"Ошибка при проверки подписки: {e}")
+        is_subscribed = False
+
+    if not is_subscribed:
+        await message.answer(
+            "❌ <b>Чтобы пользоваться ботом, сначала подпишитесь на наш канал!</b>\n\n"
+            "После подписки отправьте команду /start повторно.",
+            reply_markup=sub_keyboard
+        )
+        return
+
     await add_user(user_id=user_id, full_name=full_name, username=username)
     text = (
         "Привет! 👋\n"
