@@ -36,7 +36,7 @@ async def start_command(message: Message, state: FSMContext):
 
     if not is_subscribed:
         await message.answer(
-            "❌ <b>Чтобы пользоваться ботом, сначала подпишитесь на наш канал!</b>\n\n"
+            "🚨 <b>Чтобы пользоваться ботом, сначала подпишитесь на наш канал!</b>\n\n"
             "После подписки отправьте команду /start повторно.",
             reply_markup=sub_keyboard
         )
