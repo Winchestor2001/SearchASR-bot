@@ -241,6 +241,7 @@ async def get_shop_context(message: Message, state: FSMContext):
 # stats
 @router.message(Command("stats"), IsAdmin())
 async def stats_handler(message: Message):
+    total_users = Users.select().count()
     total_shops = Shops.select().count()
     # total_sellers = Sellers.select().count()
 
@@ -251,6 +252,7 @@ async def stats_handler(message: Message):
 
     stats_text = (
         f"<b>📊 Статистика бота:</b>\n"
+        f"👤 Пользователи: <b>{total_users}</b>\n\n"
         f"🏪 Магазины: <b>{total_shops}</b>\n"
         f"✅ Доверенные: <b>{trusted_shops}</b>\n"
         f"❌ Скам: <b>{scam_shops}</b>"
